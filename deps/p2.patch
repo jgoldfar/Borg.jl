@@ -1,0 +1,25 @@
+From b2d4721991b9e550502761fa7383ea40b56bb316 Mon Sep 17 00:00:00 2001
+From: Jonathan Goldfarb <jgoldfar@gmail.com>
+Date: Sun, 21 Feb 2016 19:01:13 -0500
+Subject: [PATCH] Add LIBS to library generation
+
+---
+ makefile | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/makefile b/makefile
+index 81a0c4d..021584a 100644
+--- a/makefile
++++ b/makefile
+@@ -34,7 +34,7 @@ shared: libborg.$(SONAME)
+ 	$(CC) $(CFLAGS) $^ $(LIBS) -o $@
+ 
+ libborg.$(SONAME): borg.c mt19937ar.c
+-	$(CC) -shared $(CFLAGS) $^ -o $@
++	$(CC) -shared $(CFLAGS) $^ $(LIBS) -o $@
+ 
+ $(DTLZ2_MS): dtlz2_ms.c borgms.c mt19937ar.c
+ 	$(MPICC) $(CFLAGS) $^ $(LIBS) -o $@
+-- 
+2.5.4 (Apple Git-61)
+

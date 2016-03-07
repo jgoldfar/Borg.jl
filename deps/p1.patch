@@ -1,0 +1,71 @@
+From 7900bc7737d04d43cc119a2ada99048492a8fb01 Mon Sep 17 00:00:00 2001
+From: Jonathan Goldfarb <jgoldfar@gmail.com>
+Date: Sun, 21 Feb 2016 18:42:39 -0500
+Subject: [PATCH] Add more general build for different platforms, as well as
+ shared library build, into the makefile
+
+---
+ makefile | 40 ++++++++++++++++++++++++++++++++--------
+ 1 file changed, 32 insertions(+), 8 deletions(-)
+
+diff --git a/makefile b/makefile
+index b381e3f..81a0c4d 100644
+--- a/makefile
++++ b/makefile
+@@ -1,21 +1,45 @@
+ CC = gcc
+ MPICC = mpicc
+ CFLAGS = -O3
+-LDFLAGS = -Wl,-R,\.
+ LIBS = -lm
+ UNAME_S = $(shell uname -s)
+ 
+ ifneq (, $(findstring SunOS, $(UNAME_S)))
+ 	LIBS += -lnsl -lsocket -lresolv
+ endif
++EXETARGETSTEMS=dtlz2_serial dtlz2_advanced frontend
+ 
+-compile:
+-	$(CC) $(CFLAGS) -o dtlz2_serial.exe dtlz2_serial.c borg.c mt19937ar.c $(LIBS)
+-	$(CC) $(CFLAGS) -o dtlz2_advanced.exe dtlz2_advanced.c borg.c mt19937ar.c $(LIBS)
+-	$(CC) $(CFLAGS) -o borg.exe frontend.c borg.c mt19937ar.c $(LIBS)
++ifeq (Darwin, $(UNAME_S))
++	SONAME=dylib
++	EXETARGETS=$(EXETARGETSTEMS)
++	DTLZ2_MS=dtlz2_ms
++	LDFLAGS=
++else ifeq (Linux, $(UNAME_S))
++	SONAME=so
++	EXETARGETS=$(EXETARGETSTEMS)
++	DTLZ2_MS=dtlz2_ms
++	LDFLAGS = -Wl,-R,\.
++else
++	SONAME=dll
++	EXETARGETS=$(addsuffix .exe,$(EXETARGETSTEMS))
++	DTLZ2_MS=dtlz2_ms.exe
++	LDFLAGS = -Wl,-R,\.
++endif
++
++all: $(EXETARGETS)
++
++shared: libborg.$(SONAME)
++
++%: %.c borg.c mt19937ar.c
++	$(CC) $(CFLAGS) $^ $(LIBS) -o $@
++
++libborg.$(SONAME): borg.c mt19937ar.c
++	$(CC) -shared $(CFLAGS) $^ -o $@
+ 
+-compile-parallel:
+-	$(MPICC) $(CFLAGS) -o dtlz2_ms.exe dtlz2_ms.c borgms.c mt19937ar.c $(LIBS)
++$(DTLZ2_MS): dtlz2_ms.c borgms.c mt19937ar.c
++	$(MPICC) $(CFLAGS) $^ $(LIBS) -o $@
+ 
+-.PHONY: compile, compile-parallel
++clean:
++	-rm $(EXETARGETS) $(DTLZ2_MS) libborg.$(SONAME)
+ 
++.PHONY: all clean
+-- 
+2.5.4 (Apple Git-61)
+
