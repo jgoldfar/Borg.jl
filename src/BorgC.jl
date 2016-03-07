@@ -1,6 +1,12 @@
+VERSION >= v"0.4.0-dev+6521" && __precompile__()
 module BorgC
+const depsfile = joinpath(dirname(dirname(@__FILE__)),"deps","deps.jl")
+if isfile(depsfile)
+    include(depsfile)
+else
+    error("Borg not properly installed. Please run Pkg.build(\"Borg\")")
+end
 
-const borglib = joinpath(normpath(joinpath(dirname(Base.source_path()), "..", "deps", "usr", "lib")),"borg")
 
 typealias BORG_Problem Ptr{Void}
 typealias BORG_Archive Ptr{Void}
@@ -9,7 +15,7 @@ function BORG_Problem_create(numberOfVariables::Int, numberOfObjectives::Int, nu
     c_fn = cfunction(fn, Void, (Ptr{Float64}, Ptr{Float64}, Ptr{Float64}, Ptr{Void}))
 
     ret = ccall(
-        (:BORG_Problem_create, borglib),
+        (:BORG_Problem_create, libborg),
         BORG_Problem,
         (Int32, Int32, Int32, Ptr{Void}, Any),
         numberOfVariables, numberOfObjectives, numberOfConstraints, c_fn, userParams)
@@ -18,7 +24,7 @@ end
 
 function BORG_Problem_set_bounds(problem::BORG_Problem, index::Int, lowerBound::Float64, upperBound::Float64)
     ccall(
-        (:BORG_Problem_set_bounds, borglib),
+        (:BORG_Problem_set_bounds, libborg),
         Void,
         (BORG_Problem, Int32, Float64, Float64),
         problem, index-1, lowerBound, upperBound)
