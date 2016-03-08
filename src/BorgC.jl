@@ -1,5 +1,3 @@
-VERSION >= v"0.4.0-dev+6521" && __precompile__()
-module BorgC
 const depsfile = joinpath(dirname(dirname(@__FILE__)),"deps","deps.jl")
 if isfile(depsfile)
   include(depsfile)
@@ -52,5 +50,3 @@ function BORG_Archive_print(archive::BORG_Archive, fp = C_NULL)
     (BORG_Archive, Ptr{Void}),
     archive, fp)
 end
-
-end # module
