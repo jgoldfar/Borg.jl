@@ -22,3 +22,6 @@ end), libborg, os = :Unix)
   # cp(joinpath(borgpath, ))
 
 @BinDeps.install Dict(:libborg => :libborg)
+
+# To build the frontend, necessary for running example 01-dtlz2-run.sh, run
+# `make frontend` in the borg-moea directory.
